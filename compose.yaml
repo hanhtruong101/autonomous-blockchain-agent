@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: autonomy
+      POSTGRES_PASSWORD: local-only
+      POSTGRES_DB: autonomy
+    # Ephemeral database matches the ephemeral Anvil chain on a full restart.
+    tmpfs: /var/lib/postgresql/data
+    ports: ["127.0.0.1:5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autonomy -d autonomy"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:v1.7.1
+    entrypoint: ["anvil"]
+    command: ["--host", "0.0.0.0", "--chain-id", "31337", "--silent"]
+    ports: ["127.0.0.1:8545:8545"]
+    healthcheck:
+      test:
+        ["CMD", "cast", "block-number", "--rpc-url", "http://127.0.0.1:8545"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  contracts:
+    image: ghcr.io/foundry-rs/foundry:v1.7.1
+    # One-shot compiler needs to initialize the shared artifact volume.
+    user: "0:0"
+    entrypoint: ["forge"]
+    command:
+      [
+        "build",
+        "--root",
+        "/contracts",
+        "--out",
+        "/artifacts",
+        "--cache-path",
+        "/tmp/foundry-cache",
+      ]
+    volumes:
+      - ./contracts:/contracts:ro
+      - artifacts:/artifacts
+  deploy:
+    build:
+      context: .
+      dockerfile: infra/api.Dockerfile
+    command: ["uv", "run", "python", "scripts/deploy.py"]
+    environment:
+      AUTONOMY_RPC_URL: http://anvil:8545
+      AUTONOMY_DEPLOYMENT_PATH: /deployment/deployment.json
+    volumes:
+      - artifacts:/workspace/contracts/out:ro
+      - deployment:/deployment
+    depends_on:
+      anvil: { condition: service_healthy }
+      contracts: { condition: service_completed_successfully }
+  api:
+    build:
+      context: .
+      dockerfile: infra/api.Dockerfile
+    environment:
+      AUTONOMY_DATABASE_URL: postgresql+psycopg://autonomy:local-only@postgres:5432/autonomy
+      AUTONOMY_RPC_URL: http://anvil:8545
+      AUTONOMY_DEPLOYMENT_PATH: /deployment/deployment.json
+      AUTONOMY_OWNER_TOKEN: ${AUTONOMY_OWNER_TOKEN:?Set a local owner token of at least 24 characters}
+      AUTONOMY_AUTOMATION_WORKER: ${AUTONOMY_AUTOMATION_WORKER:-true}
+      AUTONOMY_AI_PROVIDER: ${AUTONOMY_AI_PROVIDER:-offline}
+      AUTONOMY_AI_MODEL: ${AUTONOMY_AI_MODEL:-gpt-6-luna}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - artifacts:/workspace/contracts/out:ro
+      - deployment:/deployment:ro
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      deploy: { condition: service_completed_successfully }
+  web:
+    build:
+      context: .
+      dockerfile: infra/web.Dockerfile
+    environment:
+      API_PROXY_URL: http://api:8000
+    ports: ["127.0.0.1:5173:5173"]
+    depends_on: [api]
+volumes:
+  artifacts:
+  deployment:

@@ -1,0 +1,42 @@
+[project]
+name = "controlled-autonomy"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.34,<1",
+    "pydantic>=2.10,<3",
+    "pydantic-settings>=2.7,<3",
+    "sqlalchemy>=2.0,<3",
+    "psycopg[binary]>=3.2,<4",
+    "alembic>=1.14,<2",
+    "web3>=7.8,<8",
+    "httpx>=0.28,<1",
+    "openai>=3.24,<4",
+    "httpx2>=2.13,<3",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3,<9", "ruff>=0.11,<1", "mypy>=1.15,<2"]
+
+[tool.pytest.ini_options]
+pythonpath = ["apps/api", "."]
+testpaths = ["apps/api/tests"]
+markers = ["integration: requires a fresh deployed Anvil chain"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "apps/api"
+strict = true
+exclude = ["apps/api/migrations"]
+
+[[tool.mypy.overrides]]
+module = ["web3.*"]
+follow_imports = "silent"

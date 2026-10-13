@@ -1,0 +1,28 @@
+{
+  "name": "@autonomy/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "check": "tsc --noEmit && eslint .",
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.9.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/node": "^22.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.30.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.40.0",
+    "vite": "^7.1.0"
+  }
+}

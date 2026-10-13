@@ -1,0 +1,10 @@
+.git
+.venv
+node_modules
+**/node_modules
+**/dist
+**/__pycache__
+local
+.env
+contracts/out
+contracts/cache

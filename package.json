@@ -1,0 +1,22 @@
+{
+  "name": "controlled-autonomy-workspace",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "web:dev": "npm run dev -w apps/web",
+    "web:check": "npm run check -w apps/web",
+    "web:build": "npm run build -w apps/web",
+    "contracts:build": "node scripts/compile-contracts.mjs"
+  },
+  "devDependencies": {
+    "@foundry-rs/anvil": "1.7.1",
+    "@foundry-rs/forge": "1.7.1",
+    "prettier": "^3.9.8",
+    "solc": "0.8.28"
+  },
+  "overrides": {
+    "tmp": "^0.2.6"
+  }
+}

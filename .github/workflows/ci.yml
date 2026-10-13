@@ -1,0 +1,59 @@
+name: Verify controlled autonomy
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: autonomy
+          POSTGRES_PASSWORD: local-only
+          POSTGRES_DB: autonomy_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U autonomy -d autonomy_test"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      AUTONOMY_DATABASE_URL: postgresql+psycopg://autonomy:local-only@localhost:5432/autonomy_test
+      TEST_POSTGRES_URL: postgresql+psycopg://autonomy:local-only@localhost:5432/autonomy_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.17"
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.7.1
+      - run: uv sync --frozen
+      - run: npm ci --ignore-scripts
+      - run: uv run ruff check apps/api scripts
+      - run: uv run ruff format --check apps/api scripts
+      - run: uv run mypy apps/api/app apps/api/tests scripts
+      - run: uv run alembic upgrade head
+      - run: uv run alembic check
+      - run: uv run pytest -q
+      - run: npm run web:check
+      - run: npm run web:build
+      - run: forge fmt --root contracts --check
+      - run: forge test --root contracts --chain-id 31337
+      - name: Fresh-chain adapter and complete transaction flow
+        run: |
+          anvil --chain-id 31337 --host 127.0.0.1 --silent &
+          ANVIL_PID=$!
+          trap 'kill "$ANVIL_PID"' EXIT
+          for attempt in $(seq 1 30); do
+            if cast block-number --rpc-url http://127.0.0.1:8545; then break; fi
+            sleep 1
+          done
+          uv run python scripts/deploy.py
+          RUN_ANVIL_TESTS=1 uv run pytest apps/api/tests/test_chain.py -q
+          cast rpc anvil_reset --rpc-url http://127.0.0.1:8545
+          uv run python scripts/deploy.py
+          RUN_ANVIL_E2E=1 uv run pytest apps/api/tests/test_e2e_anvil.py -q
