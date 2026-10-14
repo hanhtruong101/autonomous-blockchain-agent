@@ -9,32 +9,14 @@
    Keep readiness checks, deterministic policy and allocation checks, simulation,
    risk tiers, approval binding, concurrency guards and on-chain restrictions.
 3. Show AI proposals and outcomes consistently in activity, details and history.
-   Preserve historical bounded-decision records and label their benchmark separately.
+   Preserve readability of historical bounded-decision audit records.
 4. Verify accepted variable amounts, rejected unsafe proposals, HOLD, invalid output,
    approval, scheduling and cancellation. Run backend and frontend quality checks.
 
-The earlier HOLD/REBALANCE-only phase below is historical. The fixed-price local
+The earlier HOLD/REBALANCE-only implementation has been retired. The fixed-price local
 assets, 100 test-USDC daily ceiling and lack of price prediction remain deliberate
 prototype limitations. Model mistakes can cause a block or HOLD; never substitute
 an executable fallback when generation fails.
-
-## Bounded AI treasury decisions (2026-10-11)
-
-1. Replace explanation-only live generation with validated HOLD/REBALANCE intent.
-   The model observes an address-free snapshot and approved policy, never supplies
-   amounts or permissions. Deterministic sizing and all execution gates remain.
-2. Record typed activity snapshots in the existing audit store, including system
-   skips, AI holds, failures and proposals. Expose a bounded authenticated history
-   with current proposal outcomes and a repeated-HOLD advisory; no schema migration.
-3. Connect activity history to policy/proposal review in the UI and label observation,
-   AI decision, calculated plan, safety checks and result separately.
-4. Separate decision agreement, deterministic sizing and safety outcomes in the
-   synthetic benchmark. Keep old raw-proposal results explicitly historical.
-5. Test invalid output, HOLD without execution, calculated amounts, stale state,
-   cancellation and schedule claims; run lint, types, API/UI and local-chain checks.
-
-Limitations: bounded two-action agent, fixed-price fake assets, model HOLD may delay
-progress, and benchmark agreement is not proof of profitability or time savings.
 
 ## Architecture and boundaries
 

@@ -12,11 +12,13 @@ def main() -> None:
         headers={"Authorization": "Bearer " + os.environ["AUTONOMY_OWNER_TOKEN"]},
     )
     goal = (
-        "Keep approximately 70% of my portfolio in USDC, "
+        "Keep approximately 30% of my portfolio in USDC, "
         "never spend more than 100 USDC per day, rebalance on demand, "
         "and only interact with approved protocols."
     )
-    response = client.post("/policies", json={"goal": goal})
+    response = client.post(
+        "/policies", json={"goal": goal, "maximum_trade_amount": "100", "tolerance_bps": 0}
+    )
     response.raise_for_status()
     draft = response.json()
     print("Review the interpreted policy before activation:")

@@ -36,7 +36,7 @@ The model returns address-free `PolicyIntent`, containing budget, targets, optio
 
 Ollama is also supported locally; see README for configuration. Live portfolio checks validate model output as `ProposalIntent`: HOLD or SWAP, supported assets, integer amount, slippage and reason. HOLD creates no proposal. SWAP preserves model choices while trusted code supplies local addresses and operation. Deterministic policy and simulated allocation checks can reject incorrect amounts or directions; reference sizing is not substituted for model output. AI never activates a policy or executes a transaction.
 
-Transport tests use `httpx2.MockTransport` with the SDK. Live account/model access has not been verified with a paid request. Refusals, malformed or incomplete output, tool calls, network failures and unsupported identifiers fail closed. Audit events store provider/model/schema metadata, never raw provider errors or keys. See [AI integration](ai-integration.md).
+Transport tests use `httpx2.MockTransport` with the SDK. Live account/model access has not been verified with a paid request. Refusals, malformed or incomplete output, tool calls, network failures and unsupported identifiers fail closed. Audit events store provider/model/schema metadata, never raw provider errors or keys. See [AI integration](history/ai-integration.md).
 
 Creating a goal always adds a new immutable draft version. `POST /policies/{version_id}/approve` activates that exact version after review, marks the previous one superseded, and records the owner. Reapproving a used version is prohibited. No endpoint mutates a version's draft. The owner token authenticates all application endpoints.
 
@@ -77,10 +77,14 @@ bounded offline template also accepts “Keep at least 95% ...”. The optional
 band with this minimum: target 95%, tolerance 1 point, minimum 95% means an accepted
 range of 95–96%.
 
-The live planner chooses the smallest of the target gap, remaining daily budget
+The offline reference planner chooses the smallest of the target gap, remaining daily budget
 and per-trade ceiling, rounding down to integer token units without crossing the
 target. The execution pipeline independently checks the simulated post-trade
 minimum, including during approval revalidation. If a wallet already below the
 minimum cannot restore it in one permitted trade, the strict rule requires no
 trade; readiness explains the limitation. The hard minimum is an off-chain rule,
 not a new independent smart-contract restriction.
+
+Live AI receives the target and limits and proposes its own amount. The backend
+preserves that amount; deterministic checks decide whether it may execute.
+Advanced settings in Create Policy are collapsed by default and reviewed in the draft.

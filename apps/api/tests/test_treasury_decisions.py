@@ -1,10 +1,10 @@
-"""Bounded intent, complete activity history and independent sizing/authorization."""
+"""Live proposals, complete activity history and independent authorization."""
 
 import json
 from decimal import Decimal
 
 import pytest
-from app.agent.portfolio import AITradingAgent, DecisionPortfolioAgent
+from app.agent.portfolio import AITradingAgent
 from app.api.application import create_app
 from app.config.settings import Settings
 from app.execution.agent_runs import AgentRuns
@@ -43,11 +43,8 @@ class DecisionProvider:
                 }
             )
         self.calls += 1
-        assert context["task"] in {"treasury_decision", "portfolio_proposal"}
+        assert context["task"] == "portfolio_proposal"
         assert "0x" not in goal
-        if context["task"] == "treasury_decision":
-            assert set(json.loads(schema)["properties"]) == {"action", "reason"}
-            return self.response
         assert "amount_units" in json.loads(schema)["properties"]
         return self.response
 
@@ -151,14 +148,19 @@ def test_invalid_decision_fails_closed_and_records_failure(adapter, sessions, re
     assert adapter.calls == 0
 
 
-def test_model_cannot_bypass_sizing_when_budget_exhausted(adapter, policy) -> None:
-    state = adapter.state().model_copy(update={"spent_units": 100_000_000})
-    assessment = DecisionPortfolioAgent(
-        DecisionProvider('{"action":"REBALANCE","reason":"Try again"}')
-    ).propose(state, policy, "test", adapter.deployment)
-    assert assessment.decision.action == "REBALANCE"
-    assert assessment.proposal is None
-    assert adapter.calls == 0
+def test_exhausted_budget_never_calls_live_model(adapter, sessions) -> None:
+    provider = DecisionProvider(trade_output())
+    adapter.spent = 100_000_000
+    with ai_client(adapter, sessions, provider) as client:
+        activate(client, "30")
+        response = client.post("/agent/runs", json={})
+        assert response.status_code == 201 and response.json() is None
+        assert client.get("/agent/activity").json()["items"][0]["state"] == "SYSTEM_SKIPPED"
+    assert provider.calls == 0 and adapter.calls == 0
+
+
+def test_historical_rebalance_activity_remains_readable() -> None:
+    assert AgentDecision(action="REBALANCE", reason="Historical decision").action == "REBALANCE"
 
 
 def test_hold_cannot_carry_proposal(proposal) -> None:

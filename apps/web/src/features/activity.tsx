@@ -18,8 +18,8 @@ export function Activity() {
   });
   const queryClient = useQueryClient();
   const run = useMutation({
-    mutationFn: (scenario: string) =>
-      api<Proposal | null>("/agent/runs", { scenario }),
+    mutationFn: () =>
+      api<Proposal | null>("/agent/runs", { scenario: "portfolio" }),
     onSuccess: (proposal) => {
       if (proposal) {
         queryClient.setQueryData<Proposal[]>(["proposals"], (items) => [
@@ -54,7 +54,7 @@ export function Activity() {
           disabled={
             run.isPending || automation.data?.readiness.code !== "READY"
           }
-          onClick={() => run.mutate("portfolio")}
+          onClick={() => run.mutate()}
         >
           {run.isPending ? "Preparing and evaluating…" : "Run portfolio check"}
         </button>
@@ -62,35 +62,6 @@ export function Activity() {
           If this button is unavailable, the status above explains what needs
           attention.
         </p>
-        <details>
-          <summary>
-            Educational safety scenarios (fixed proposals, no AI)
-          </summary>
-          <p>
-            These scenarios can submit fake-money transactions through the same
-            safety checks. They are not autonomous model proposals. The 70-unit
-            review requires an approved per-trade ceiling of at least 70 and
-            sufficient daily budget.
-          </p>
-          <div className="actions">
-            {[
-              ["A", "30-unit swap"],
-              ["B", "80-unit budget test"],
-              ["C", "Unknown contract"],
-              ["D", "Excessive slippage"],
-              ["medium", "70-unit approval test"],
-            ].map(([scenario, label]) => (
-              <button
-                className="secondary"
-                key={scenario}
-                disabled={run.isPending || automation.data?.execution_paused}
-                onClick={() => run.mutate(scenario)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </details>
         <ErrorMessage error={run.error} />
         {run.isSuccess && run.data === null && (
           <p role="status">

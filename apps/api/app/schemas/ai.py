@@ -74,20 +74,16 @@ class ProposalIntent(Model):
         return self
 
 
-class PlanExplanation(Model):
-    reason: str = Field(min_length=1, max_length=1200)
+class AgentDecision(Model):
+    """Activity summary. Historical REBALANCE records remain readable."""
+
+    reason: str = Field(min_length=1, max_length=2000)
+    action: Literal["HOLD", "REBALANCE", "SWAP"]
 
     @field_validator("reason")
     @classmethod
     def safe_text(cls, value: str) -> str:
         return ProposalIntent.no_operational_details(value)
-
-
-class AgentDecision(PlanExplanation):
-    """Activity summary. Historical REBALANCE records remain readable."""
-
-    reason: str = Field(min_length=1, max_length=2000)
-    action: Literal["HOLD", "REBALANCE", "SWAP"]
 
 
 class AgentAssessment(Model):

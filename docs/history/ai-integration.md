@@ -3,13 +3,13 @@
 > Historical integration report. The current live workflow uses typed AI trade
 > proposals with independently validated amounts. The old portfolio mode selector
 > is absent. Use **Agent activity / Run portfolio check** and the current
-> [workflow guide](treasury-agent.md). Fixed scenarios remain educational fixtures.
+> [workflow guide](../treasury-agent.md). Fixed scenarios remain educational fixtures.
 
 ## Startup repair
 
 `AUTONOMY_DEPLOYMENT_PATH` defaults to `local/deployment.json`, relative to the project root. `scripts/deploy.py` explicitly writes it after successful deployment/seeding. The reported `Missing local deployment; execution disabled` message came from finding no bytecode at an address in that file. This commonly occurs after restarting ephemeral Anvil while retaining the old file. A missing file is a separate case; both now explain how to recover. Neither case enables execution or deploys automatically.
 
-Use the three-terminal commands in [README](../README.md): start Anvil, deploy contracts, migrate PostgreSQL, start API, then React. Compile first with `npm run contracts:build`. Verify `Test-Path local/deployment.json`. Deployment requires a fresh local Anvil chain and rejects nonlocal RPC endpoints before connecting. A new chain should use a matching fresh demo database. Never clear a working demo silently.
+Use the three-terminal commands in [README](../../README.md): start Anvil, deploy contracts, migrate PostgreSQL, start API, then React. Compile first with `npm run contracts:build`. Verify `Test-Path local/deployment.json`. Deployment requires a fresh local Anvil chain and rejects nonlocal RPC endpoints before connecting. A new chain should use a matching fresh demo database. Never clear a working demo silently.
 
 ## Important changes
 

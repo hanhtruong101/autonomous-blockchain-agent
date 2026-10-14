@@ -18,18 +18,13 @@ class PortfolioProposer(Protocol):
     ) -> TransactionProposal | AgentAssessment | None: ...
 
 
-class OpenAIPortfolioAgent:
+class AITradingAgent:
     """Provider-independent proposal mapper; no signing or execution dependencies."""
 
     def __init__(self, provider: StructuredProvider) -> None:
         self.provider = provider
 
     def propose(
-        self, state: WalletState, policy: PolicyDraft, version_id: str, deployment: Deployment
-    ) -> TransactionProposal | None:
-        return self.assess(state, policy, version_id, deployment).proposal
-
-    def assess(
         self, state: WalletState, policy: PolicyDraft, version_id: str, deployment: Deployment
     ) -> AgentAssessment:
         context = PolicyIntent(
@@ -86,18 +81,6 @@ class OpenAIPortfolioAgent:
         return AgentAssessment(decision=decision, proposal=proposal)
 
 
-class AITradingAgent:
-    """Live AI trade proposals, with HOLD reasoning retained for activity history."""
-
-    def __init__(self, provider: StructuredProvider) -> None:
-        self.proposer = OpenAIPortfolioAgent(provider)
-
-    def propose(
-        self, state: WalletState, policy: PolicyDraft, version_id: str, deployment: Deployment
-    ) -> AgentAssessment:
-        return self.proposer.assess(state, policy, version_id, deployment)
-
-
 class PortfolioAgent:
     """Deterministic reference agent. It has no signer or execution dependency."""
 
@@ -121,49 +104,3 @@ class PortfolioAgent:
             maximum_slippage_bps=policy.maximum_slippage_bps,
             reason=plan.reason,
         )
-
-
-class DecisionPortfolioAgent:
-    """Historical HOLD/REBALANCE benchmark baseline, not the live AI agent."""
-
-    def __init__(self, provider: StructuredProvider) -> None:
-        self.provider = provider
-
-    def propose(
-        self, state: WalletState, policy: PolicyDraft, version_id: str, deployment: Deployment
-    ) -> AgentAssessment:
-        decision = AgentDecision.model_validate_json(
-            self.provider.generate(
-                json.dumps(
-                    {
-                        "task": "treasury_decision",
-                        "usdc_units": str(state.usdc_units),
-                        "weth_units": str(state.weth_units),
-                        "spent_units": str(state.spent_units),
-                        "target_usdc": str(policy.portfolio_targets.USDC),
-                        "tolerance_bps": policy.rebalance.tolerance_bps,
-                        "minimum_usdc_ratio": (
-                            str(policy.minimum_usdc_ratio)
-                            if policy.minimum_usdc_ratio is not None
-                            else None
-                        ),
-                        "daily_limit_units": str(
-                            int(policy.daily_spending_limit.amount * 1_000_000)
-                        ),
-                        "trade_limit_units": str(int(policy.maximum_trade_amount * 1_000_000)),
-                        "available_actions": ["HOLD", "REBALANCE"],
-                        "valuation": "Both mock tokens have six decimals and fixed 1:1 value.",
-                    }
-                ),
-                json.dumps(AgentDecision.model_json_schema(mode="serialization")),
-            )
-        )
-        if decision.action == "HOLD":
-            return AgentAssessment(decision=decision)
-        proposal = PortfolioAgent().propose(state, policy, version_id, deployment)
-        # No model-supplied field is mapped to an executable operation or amount.
-        if proposal is not None:
-            proposal = proposal.model_copy(
-                update={"reason": proposal.reason + " AI decision: " + decision.reason}
-            )
-        return AgentAssessment(decision=decision, proposal=proposal)

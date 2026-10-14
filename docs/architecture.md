@@ -71,7 +71,7 @@ Reference APIs: [SQLAlchemy transaction scope](https://docs.sqlalchemy.org/en/20
 
 ## Optional AI interpretation and trade proposals
 
-`OpenAIResponsesProvider` and `OllamaProvider` implement infrastructure-free `StructuredProvider`. The live factory selects `ProviderPolicyInterpreter` and `AITradingAgent`; offline uses `LocalPolicyInterpreter` and `PortfolioAgent`. The model returns address-free `ProposalIntent` with HOLD or SWAP, assets, integer amount, slippage and reason. `OpenAIPortfolioAgent` maps accepted output to typed domain objects without altering amounts. Deployment supplies addresses and operation; the model receives no signer or tools. `agent/sizing.py` remains the offline reference and readiness helper. `DecisionPortfolioAgent` is retained only for the historical bounded-decision benchmark. Provider errors fail closed, never falling back to execution.
+`OpenAIResponsesProvider` and `OllamaProvider` implement infrastructure-free `StructuredProvider`. The live factory selects `ProviderPolicyInterpreter` and `AITradingAgent`; offline uses `LocalPolicyInterpreter` and `PortfolioAgent`. The model returns address-free `ProposalIntent` with HOLD or SWAP, assets, integer amount, slippage and reason. `AITradingAgent` maps accepted output to typed domain objects without altering amounts. Deployment supplies addresses and operation; the model receives no signer or tools. `agent/sizing.py` remains the offline reference and readiness helper. Provider errors fail closed, never falling back to execution.
 
 ```mermaid
 flowchart TD
@@ -121,7 +121,7 @@ Owner controls are a separate narrow interface from the agent execution adapter.
 ## Check history projection
 
 Immutable `AGENT_ACTIVITY` audit snapshots describe a check's observation, accepted
-AI intention, calculated plan and linked proposal. They reuse the audit table rather
+AI decision, proposed trade and linked proposal. They reuse the audit table rather
 than add a competing execution state machine. The API reads the latest snapshot
 per check and resolves current proposal status from the authoritative proposal
 record. Audit/UI balances are decimal integer strings so large EVM balances round

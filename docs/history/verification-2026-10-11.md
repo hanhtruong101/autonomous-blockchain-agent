@@ -1,7 +1,7 @@
 # Controlled planning and UI verification — 2026-10-11
 
 This report records the earlier explanation-only slice. The subsequent
-[bounded AI treasury update](treasury-agent.md) adds HOLD/REBALANCE decisions and
+[bounded AI treasury update](../treasury-agent.md) adds HOLD/REBALANCE decisions and
 check history; use that report for current behavior and test counts.
 
 ## Delivered behavior
@@ -63,7 +63,7 @@ The deterministic suite matched 16/16 expected actions and amounts. One actual
 Ollama shadow run matched 1/16, with zero schema-invalid outputs, 12 hypothetical
 blocked results and approximately 25 seconds of total generation time. This
 single-machine observation is not a general model ranking. See
-[evaluation methodology](evaluation.md) for definitions and a small manual study
+evaluation methodology (retired benchmark documentation) for definitions and a small manual study
 to measure time savings rather than infer them from automation alone.
 
 Docker Compose was not executed during this slice, and no paid OpenAI request

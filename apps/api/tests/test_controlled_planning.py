@@ -4,7 +4,7 @@ import json
 from decimal import Decimal
 
 import pytest
-from app.agent.portfolio import DecisionPortfolioAgent, PortfolioAgent
+from app.agent.portfolio import AITradingAgent, PortfolioAgent
 from app.agent.sizing import calculate_plan
 from app.policies.rebalance import minimum_allocation
 from app.schemas.domain import Asset, PolicyDraft, TokenChange, TransactionProposal
@@ -131,14 +131,16 @@ def test_at_least_goal_retains_minimum(client: TestClient) -> None:
     assert response.json()["draft"]["minimum_usdc_ratio"] == "0.95"
 
 
-def test_live_model_cannot_change_amount(policy: PolicyDraft, adapter: FakeAdapter) -> None:
+def test_live_model_cannot_supply_incomplete_proposal(
+    policy: PolicyDraft, adapter: FakeAdapter
+) -> None:
     class MaliciousExplanation:
         def generate(self, goal: str, schema: str) -> str:
-            assert json.loads(goal)["task"] == "treasury_decision"
+            assert json.loads(goal)["task"] == "portfolio_proposal"
             return '{"reason":"Use a larger trade", "amount_units":"99000000"}'
 
     with pytest.raises(ValidationError):
-        DecisionPortfolioAgent(MaliciousExplanation()).propose(
+        AITradingAgent(MaliciousExplanation()).propose(
             adapter.state(), policy, "test", adapter.deployment
         )
     assert adapter.calls == 0

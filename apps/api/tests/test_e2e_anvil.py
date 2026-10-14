@@ -26,7 +26,14 @@ def test_real_chain_complete_flow(tmp_path: Path) -> None:
     assert adapter.state().spent_units == 0, "Start with fresh deployment"
     app = create_app(Settings(owner_token=SecretStr(TOKEN)), adapter, sessions)
     with TestClient(app, headers={"Authorization": f"Bearer {TOKEN}"}) as client:
-        draft = client.post("/policies", json={"goal": GOAL}).json()
+        draft = client.post(
+            "/policies",
+            json={
+                "goal": GOAL.replace("70%", "30%"),
+                "maximum_trade_amount": "100",
+                "tolerance_bps": 0,
+            },
+        ).json()
         assert client.post(f"/policies/{draft['id']}/approve").status_code == 200
         for scenario, expected in [
             ("A", "EXECUTED"),
@@ -42,6 +49,7 @@ def test_real_chain_complete_flow(tmp_path: Path) -> None:
         approved = client.post(f"/approvals/{medium['approval']['id']}/approve")
         assert approved.json()["status"] == "EXECUTED", approved.text
         assert adapter.state().spent_units == 100_000_000
-        assert adapter.state().weth_units == 100_000_000
+        assert adapter.state().weth_units == 600_000_000
+        assert adapter.state().usdc_units == 400_000_000
         assert len(client.get("/transactions").json()) == 2
     engine.dispose()

@@ -6,10 +6,6 @@ from pydantic import BaseModel, Field, JsonValue, SecretStr, TypeAdapter
 
 GENERATION_INSTRUCTIONS = (
     "You draft policies or propose treasury trades. All output is untrusted. "
-    "For treasury_decision return only action HOLD or REBALANCE and an English reason. "
-    "Choose HOLD inside tolerance, without budget, or if a hard minimum cannot be met. "
-    "Otherwise prefer REBALANCE toward the approved target. Trusted code computes "
-    "direction and amount and independently validates execution. Never predict prices. "
     "For policy_draft distinguish approximate targets from hard minimum_usdc_ratio constraints; "
     "use null when no minimum is requested and a decimal fraction for 'at least'. "
     "You never authorize or execute. "

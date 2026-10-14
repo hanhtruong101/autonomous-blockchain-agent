@@ -48,8 +48,8 @@ def test_mock_ai_real_chain(tmp_path: Path) -> None:
                     "action": "SWAP",
                     "amount_units": self.amount,
                     "protocol": self.protocol,
-                    "asset_in": "USDC",
-                    "asset_out": "WETH",
+                    "asset_in": "WETH",
+                    "asset_out": "USDC",
                     "maximum_slippage_bps": self.slippage,
                     "reason": "Mock AI local integration",
                 }
@@ -104,8 +104,8 @@ def test_mock_ai_real_chain(tmp_path: Path) -> None:
         evidence.append(
             {"status": "OWNER_APPROVED_EXECUTED", "hash": approved["execution"]["transaction_hash"]}
         )
-        assert adapter.state().usdc_units == 900_000_000
-        assert adapter.state().weth_units == 100_000_000
+        assert adapter.state().usdc_units == 600_000_000
+        assert adapter.state().weth_units == 400_000_000
         with sessions() as session:
             assert len(list(session.scalars(select(ExecutionRecord)))) == 2
         evidence.append(

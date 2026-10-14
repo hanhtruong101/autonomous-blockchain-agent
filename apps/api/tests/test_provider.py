@@ -2,7 +2,7 @@ import json
 
 import httpx2 as httpx
 import pytest
-from app.agent.portfolio import OpenAIPortfolioAgent
+from app.agent.portfolio import AITradingAgent
 from app.api.application import create_app
 from app.config.settings import Settings
 from app.policies.interpreter import ProviderPolicyInterpreter
@@ -190,7 +190,7 @@ def test_ai_pipeline(
         owner_token=SecretStr(TOKEN),
     )
     with TestClient(
-        create_app(settings, adapter, sessions, provider, proposer=OpenAIPortfolioAgent(provider)),
+        create_app(settings, adapter, sessions, provider, proposer=AITradingAgent(provider)),
         headers={"Authorization": f"Bearer {TOKEN}"},
     ) as client:
         draft = client.post("/policies", json={"goal": GOAL}).json()
@@ -238,9 +238,7 @@ def test_failure_never_falls_back(
     )
     adapter.fail_simulation = failure == "simulation"
     with TestClient(
-        create_app(
-            settings, adapter, sessions, Provider(), proposer=OpenAIPortfolioAgent(Provider())
-        ),
+        create_app(settings, adapter, sessions, Provider(), proposer=AITradingAgent(Provider())),
         headers={"Authorization": f"Bearer {TOKEN}"},
     ) as client:
         draft = client.post("/policies", json={"goal": GOAL})
@@ -332,7 +330,7 @@ def test_safe_provider_diagnostics(
         ai_provider="openai", OPENAI_API_KEY="test-only-key", owner_token=SecretStr(TOKEN)
     )
     with TestClient(
-        create_app(settings, adapter, sessions, provider, proposer=OpenAIPortfolioAgent(provider)),
+        create_app(settings, adapter, sessions, provider, proposer=AITradingAgent(provider)),
         headers={"Authorization": f"Bearer {TOKEN}"},
     ) as client:
         response = client.post("/policies", json={"goal": GOAL})
