@@ -18,8 +18,8 @@ export function Activity() {
   });
   const queryClient = useQueryClient();
   const run = useMutation({
-    mutationFn: () =>
-      api<Proposal | null>("/agent/runs", { scenario: "portfolio" }),
+    mutationFn: (scenario: "portfolio" | "A" | "B" | "C" | "D" | "medium") =>
+      api<Proposal | null>("/agent/runs", { scenario }),
     onSuccess: (proposal) => {
       if (proposal) {
         queryClient.setQueryData<Proposal[]>(["proposals"], (items) => [
@@ -54,7 +54,7 @@ export function Activity() {
           disabled={
             run.isPending || automation.data?.readiness.code !== "READY"
           }
-          onClick={() => run.mutate()}
+          onClick={() => run.mutate("portfolio")}
         >
           {run.isPending ? "Preparing and evaluating…" : "Run portfolio check"}
         </button>
@@ -62,6 +62,52 @@ export function Activity() {
           If this button is unavailable, the status above explains what needs
           attention.
         </p>
+        <details>
+          <summary>
+            Educational safety scenarios (fixed proposals, no AI)
+          </summary>
+          <p>
+            For the expected sequence, start with a fresh 500 USDC / 500 WETH
+            wallet and unused daily budget. Approve a 30% USDC / 70% WETH policy
+            with Exact target, no hard minimum, on-demand rebalancing, and daily
+            and per-trade limits of 100. Keep automatic checks off.
+          </p>
+          <p className="muted">
+            These fixed USDC → WETH proposals use your active policy and can
+            submit fake-money transactions. They do not call AI or change your
+            policy. Other balances or policies may block every scenario. Run A,
+            B, C, D, then the approval test: A should execute, B–D should block,
+            and the 70-unit proposal should wait in Approval queue.
+          </p>
+          <div className="actions">
+            {(
+              [
+                ["A", "A · 30-unit swap"],
+                ["B", "B · 80-unit budget test"],
+                ["C", "C · Unknown contract"],
+                ["D", "D · Excessive slippage"],
+                ["medium", "70-unit approval test"],
+              ] as const
+            ).map(([scenario, label]) => (
+              <button
+                type="button"
+                className="secondary"
+                key={scenario}
+                disabled={
+                  run.isPending ||
+                  !automation.data ||
+                  automation.data.execution_paused ||
+                  automation.data.enabled ||
+                  automation.data.running ||
+                  automation.data.generation_in_progress
+                }
+                onClick={() => run.mutate(scenario)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </details>
         <ErrorMessage error={run.error} />
         {run.isSuccess && run.data === null && (
           <p role="status">

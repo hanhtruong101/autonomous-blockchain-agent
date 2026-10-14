@@ -10,7 +10,7 @@ const example =
 export function CreatePolicy() {
   const [goal, setGoal] = useState(example);
   const [tolerance, setTolerance] = useState(100);
-  const [maximumTrade, setMaximumTrade] = useState("30");
+  const [maximumTrade, setMaximumTrade] = useState("100");
   const [minimum, setMinimum] = useState("");
   const navigate = useNavigate();
   const configuration = useQuery({

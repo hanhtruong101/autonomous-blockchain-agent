@@ -25,9 +25,13 @@ for a deterministic fixture demonstration. Create this policy:
 
 > Keep approximately 30% of my portfolio in USDC, never spend more than 100 USDC per day, rebalance on demand, and only interact with approved protocols.
 
-The fixture buttons are not part of the application UI. With the fresh offline
-stack running, set the same `AUTONOMY_OWNER_TOKEN` in a terminal at the project
-root, then run:
+In the UI, set Exact target, no hard minimum and maximum per trade 100 under
+Advanced settings, then approve the policy above. Keep automatic checks off.
+Expand **Educational safety scenarios** in Agent activity and run A, B, C, D,
+then the 70-unit approval test. These are fixed proposals, not AI decisions.
+
+Alternatively, on a separate fresh stack, set the same `AUTONOMY_OWNER_TOKEN`
+in a terminal at the project root and run:
 
 ```powershell
 uv run python scripts/demo.py
