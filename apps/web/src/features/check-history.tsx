@@ -1,8 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import type { AgentActivityView } from "../../../../packages/shared-types";
-import { api, units } from "../api";
+import { api } from "../api";
 import { ErrorMessage, Panel, Status } from "../components";
+
+// Round display values with integer arithmetic; stored amounts stay unchanged.
+function displayUnits(value: string): string {
+  const cents = (BigInt(value) + 5000n) / 10000n;
+  return `${cents / 100n}.${(cents % 100n).toString().padStart(2, "0")}`;
+}
+
+function displayPlan(plan: string): string {
+  // Format only the leading stored swap amount, never numbers in the AI reason.
+  return plan.replace(
+    /^Swap (\d+)(?:\.(\d{1,6}))? (USDC|WETH)/,
+    (_, whole: string, fraction: string | undefined, asset: string) =>
+      `Swap ${displayUnits(`${whole}${(fraction ?? "").padEnd(6, "0")}`)} ${asset}`,
+  );
+}
 
 export function CheckHistory() {
   const query = useQuery({
@@ -14,8 +29,9 @@ export function CheckHistory() {
     <Panel title="Check history">
       <p>
         The latest 50 checks include system skips and AI HOLD decisions, even
-        when no transaction exists. Older runs remain in Audit log. This
-        detailed history starts with the bounded-decision update.
+        when no transaction exists. Wallet figures show the state before each
+        check; the outcome below shows what happened afterwards. Older runs
+        remain in Audit log.
       </p>
       <ErrorMessage error={query.error} />
       {query.isPending && <p role="status">Loading check history…</p>}
@@ -45,11 +61,11 @@ export function CheckHistory() {
               Source: {item.generation.provider} {item.generation.model ?? ""}
             </p>
           )}
-          <ol>
+          <ol className="check-steps">
             <li>
-              <strong>Observation:</strong>{" "}
+              <strong>Before this check:</strong>{" "}
               {item.observation
-                ? `${units(item.observation.usdc_units)} USDC / ${units(item.observation.weth_units)} WETH; ${units(item.observation.spent_units)} test units spent today.`
+                ? `${displayUnits(item.observation.usdc_units)} USDC / ${displayUnits(item.observation.weth_units)} WETH. Daily budget already used before this check: ${displayUnits(item.observation.spent_units)} TestUSDC equivalent (excludes this trade).`
                 : "No wallet snapshot recorded."}
             </li>
             <li>
@@ -69,7 +85,9 @@ export function CheckHistory() {
                   ? "AI trade proposal:"
                   : "Calculated plan:"}
               </strong>{" "}
-              {item.calculation ?? "No executable transaction plan stored."}
+              {item.calculation
+                ? displayPlan(item.calculation)
+                : "No transaction proposed."}
             </li>
             <li>
               <strong>Safety checks:</strong>{" "}
@@ -82,8 +100,11 @@ export function CheckHistory() {
               )}
             </li>
             <li>
-              <strong>Result:</strong>{" "}
-              {(item.proposal_status ?? item.state).replaceAll("_", " ")}
+              <strong>Outcome:</strong>{" "}
+              <Status value={item.proposal_status ?? item.state} />
+              {item.proposal_status === "EXECUTED" && (
+                <span> Trade confirmed on the local blockchain.</span>
+              )}
             </li>
           </ol>
           {item.policy_version_id && (

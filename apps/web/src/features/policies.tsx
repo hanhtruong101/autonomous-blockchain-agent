@@ -31,13 +31,14 @@ export function CreatePolicy() {
     onSuccess: (policy) => navigate(`/policies/${policy.id}`),
   });
   return (
-    <>
-      <h1>Define the boundaries.</h1>
+    <div className="policy-create">
+      <h1>Create a policy.</h1>
       <p className="lede">
         Your goal becomes a draft. Only your explicit approval can activate it.
       </p>
       <Panel title="What should the agent do?">
         <form
+          className="policy-form"
           onSubmit={(event) => {
             event.preventDefault();
             mutation.mutate();
@@ -46,7 +47,7 @@ export function CreatePolicy() {
           <label htmlFor="goal">Portfolio goal</label>
           <textarea
             id="goal"
-            rows={6}
+            rows={4}
             value={goal}
             onChange={(event) => setGoal(event.target.value)}
             maxLength={2000}
@@ -56,66 +57,85 @@ export function CreatePolicy() {
               ? `Model enabled: creating a draft sends this goal to ${configuration.data.provider_host}. Review the interpretation carefully; the model cannot activate it.`
               : "Offline interpreter: use this template. Change the percentage, daily limit (up to 100), and cadence to weekly, daily, or on demand. No external AI service is called."}
           </p>
-          <fieldset>
-            <legend>Explicit boundaries to review before activation</legend>
-            <label htmlFor="tolerance">Accepted deviation from target</label>
-            <select
-              id="tolerance"
-              value={tolerance}
-              onChange={(event) => setTolerance(Number(event.target.value))}
-            >
-              <option value={0}>Exact target (0 percentage points)</option>
-              <option value={100}>±1 percentage point</option>
-              <option value={500}>±5 percentage points</option>
-            </select>
-            <p className="muted">
-              For example, a 95% target with ±1 point accepts 94–96%. This is a
-              target band, not a hard minimum.
-            </p>
-            <label htmlFor="minimum-usdc">
-              Optional hard minimum USDC share (%)
-            </label>
-            <input
-              id="minimum-usdc"
-              type="number"
-              min="0"
-              max="100"
-              step="1"
-              value={minimum}
-              onChange={(event) => setMinimum(event.target.value)}
-              placeholder="No additional minimum"
-            />
-            <p className="muted">
-              Every simulated trade must finish at or above this share. A
-              stricter minimum in your goal is preserved. If your wallet starts
-              below it, a small trade may be blocked.
-            </p>
-            <label htmlFor="maximum-trade">
-              Maximum amount per trade (TestUSDC equivalent)
-            </label>
-            <input
-              id="maximum-trade"
-              type="number"
-              min="0.000001"
-              max="100"
-              step="0.000001"
-              required
-              value={maximumTrade}
-              onChange={(event) => setMaximumTrade(event.target.value)}
-            />
-            <p className="muted">
-              AI can propose an amount, but independent checks enforce this
-              ceiling and the daily budget. These form settings are included in
-              the draft for your review.
-            </p>
+          <fieldset className="policy-boundaries">
+            <legend>Trading boundaries</legend>
+            <div className="policy-fields">
+              <div className="policy-field policy-field-wide">
+                <label htmlFor="tolerance">
+                  Accepted deviation from target
+                </label>
+                <select
+                  id="tolerance"
+                  aria-describedby="tolerance-help"
+                  value={tolerance}
+                  onChange={(event) => setTolerance(Number(event.target.value))}
+                >
+                  <option value={0}>Exact target</option>
+                  <option value={100}>±1 percentage point</option>
+                  <option value={500}>±5 percentage points</option>
+                </select>
+                <p className="muted" id="tolerance-help">
+                  For example, a 95% target with ±1 point accepts 94–96%. This
+                  is a target band, not a hard minimum.
+                </p>
+              </div>
+              <div className="policy-field">
+                <label htmlFor="minimum-usdc">
+                  Minimum USDC share (%) · optional
+                </label>
+                <input
+                  id="minimum-usdc"
+                  aria-describedby="minimum-help"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={minimum}
+                  onChange={(event) => setMinimum(event.target.value)}
+                  placeholder="No additional minimum"
+                />
+                <p className="muted" id="minimum-help">
+                  Every simulated trade must finish at or above this share. A
+                  stricter minimum in your goal is preserved. If your wallet
+                  starts below it, a small trade may be blocked.
+                </p>
+              </div>
+              <div className="policy-field">
+                <label htmlFor="maximum-trade">
+                  Maximum per trade (TestUSDC equivalent)
+                </label>
+                <input
+                  id="maximum-trade"
+                  aria-describedby="trade-help"
+                  type="number"
+                  min="0.000001"
+                  max="100"
+                  step="0.000001"
+                  required
+                  value={maximumTrade}
+                  onChange={(event) => setMaximumTrade(event.target.value)}
+                />
+                <p className="muted" id="trade-help">
+                  AI can propose an amount, but independent checks enforce this
+                  ceiling and the daily budget. These form settings are included
+                  in the draft for your review.
+                </p>
+              </div>
+            </div>
           </fieldset>
-          <button disabled={mutation.isPending || !configuration.data}>
-            Create policy draft
-          </button>
+          <div className="policy-form-footer">
+            <p className="muted">
+              Review the draft before approving. Creating it does not start
+              trading.
+            </p>
+            <button disabled={mutation.isPending || !configuration.data}>
+              {mutation.isPending ? "Creating draft…" : "Create policy draft"}
+            </button>
+          </div>
           <ErrorMessage error={mutation.error ?? configuration.error} />
         </form>
       </Panel>
-    </>
+    </div>
   );
 }
 

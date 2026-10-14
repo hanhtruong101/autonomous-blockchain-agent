@@ -12,7 +12,6 @@ import { Dashboard } from "./features/dashboard";
 import { CreatePolicy, PolicyReview, Policies } from "./features/policies";
 import { Activity, Approvals, ProposalsPage } from "./features/activity";
 import { TransactionDetail } from "./features/detail";
-import { EvaluationPage } from "./features/evaluation";
 import { Audit } from "./features/audit";
 import "./style.css";
 
@@ -87,7 +86,6 @@ function App() {
               ["/proposals", "Proposals & outcomes"],
               ["/approvals", "Approval queue"],
               ["/audit", "Audit log"],
-              ["/evaluation", "Evaluation"],
             ].map(([to, label]) => (
               <NavLink end={to === "/" || to === "/policies"} key={to} to={to}>
                 {label}
@@ -125,7 +123,6 @@ function App() {
                     element={<TransactionDetail />}
                   />
                   <Route path="/audit" element={<Audit />} />
-                  <Route path="/evaluation" element={<EvaluationPage />} />
                   <Route path="*" element={<p>Page not found.</p>} />
                 </Routes>
               </>

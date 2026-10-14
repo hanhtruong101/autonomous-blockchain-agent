@@ -26,10 +26,17 @@ textarea {
 }
 button,
 .button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
   background: #245d47;
   color: white;
-  padding: 12px 20px;
+  padding: 10px 16px;
   border: 1px solid #245d47;
   border-radius: 7px;
   cursor: pointer;
@@ -42,11 +49,29 @@ button:hover,
 }
 button:disabled {
   opacity: 0.5;
-  cursor: wait;
+  cursor: not-allowed;
 }
 .secondary {
   background: white;
   color: #245d47;
+}
+.secondary:hover {
+  background: #edf4ef;
+  color: #194832;
+}
+.danger {
+  background: #fff5f1;
+  border-color: #d9a797;
+  color: #913e2d;
+}
+.danger:hover {
+  background: #f9e6df;
+  color: #79301f;
+}
+button:focus-visible,
+.button:focus-visible {
+  outline: 2px solid #236b51;
+  outline-offset: 3px;
 }
 .shell {
   display: flex;
@@ -548,4 +573,112 @@ details {
 }
 .results-empty {
   border-style: dashed;
+}
+.policy-form {
+  max-width: 820px;
+  width: 100%;
+  margin-inline: auto;
+  display: grid;
+  gap: 12px;
+}
+.policy-create > .panel > h2 {
+  max-width: 820px;
+  margin-inline: auto;
+}
+.schedule-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 20px;
+}
+.schedule-field select {
+  width: 100%;
+  max-width: 320px;
+  min-height: 42px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+.policy-form input,
+.policy-form select,
+.policy-form textarea {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+.policy-form select {
+  max-width: 300px;
+  min-height: 42px;
+}
+.policy-form .muted {
+  margin: 0;
+  color: #596b60;
+  line-height: 1.6;
+}
+.policy-boundaries {
+  min-width: 0;
+  margin: 12px 0 4px;
+  padding: 20px;
+  border: 1px solid #e0e6dd;
+  border-radius: 8px;
+}
+.policy-boundaries legend {
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.policy-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.policy-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.policy-field-wide {
+  grid-column: 1 / -1;
+}
+.policy-field label {
+  line-height: 1.5;
+}
+.policy-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 12px;
+}
+.policy-form-footer button {
+  padding: 10px 16px;
+  font-size: 14px;
+  min-height: 42px;
+}
+.policy-form :focus-visible {
+  outline: 2px solid #236b51;
+  outline-offset: 3px;
+}
+.check-steps {
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.check-steps li {
+  padding: 8px 0 8px 6px;
+}
+.check-steps strong {
+  display: block;
+  margin-bottom: 4px;
+}
+@media (max-width: 850px) {
+  .policy-fields {
+    grid-template-columns: 1fr;
+  }
+  .policy-boundaries {
+    padding: 16px;
+  }
 }

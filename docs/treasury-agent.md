@@ -40,10 +40,7 @@ price prediction or unrestricted trading.
    A weekly policy can still skip for 168 hours after a completed trade.
 6. Review medium-risk proposals in Approval queue. Test Stop and Emergency freeze;
    freeze invalidates pending work and requests the independent on-chain pause.
-7. Run the optional synthetic comparison from Evaluation. It now uses the same
-   AI trade proposer as live runs, without RPC, signing or wallet changes.
-   Compare action, proposed amount and safety separately. A reference mismatch
-   does not automatically mean an unsafe trade.
+
 
 No existing policy is rewritten. Old bounded-decision records remain readable and
 carry their original generation metadata. Historical reports below describe the
@@ -90,5 +87,4 @@ an owner's real wallet.
 The model can still misunderstand a goal or choose unnecessary HOLDs. A successful
 demo does not establish real-world time savings, market safety or challenge bonus
 points. Prices remain fixed 1:1, contracts are educational and unaudited, and
-portfolio minimums remain off-chain rules. See the threat model and evaluation
-methodology before extending the scope.
+portfolio minimums remain off-chain rules. See the threat model before extending the scope.

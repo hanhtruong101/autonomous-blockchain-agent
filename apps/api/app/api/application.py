@@ -2,7 +2,6 @@ import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -18,7 +17,6 @@ from app.blockchain.adapter import LocalSmartAccountAdapter, SmartAccountAdapter
 from app.blockchain.owner import LocalOwnerControls, OwnerControls
 from app.config.settings import Settings
 from app.db.repository import Conflict, Repository
-from app.evaluation import evaluate_scenarios
 from app.execution.agent_runs import AgentRuns
 from app.execution.automation import AutomationService
 from app.execution.coordinator import ExecutionCoordinator
@@ -42,7 +40,6 @@ from app.schemas.activity import ActivityView
 from app.schemas.ai import GenerationMetadata, StructuredProvider
 from app.schemas.automation import AutomationView, EnableAutomation
 from app.schemas.domain import TransactionProposal, WalletState, as_utc
-from app.schemas.evaluation import EvaluationReport, EvaluationView
 from app.schemas.responses import (
     ApprovalView,
     AuditView,
@@ -142,26 +139,6 @@ def create_app(
     async def invalid(request: Request, error: ValueError) -> JSONResponse:
         return JSONResponse(
             status_code=422, content={"detail": "Invalid input or unsupported goal"}
-        )
-
-    @app.get("/evaluation")
-    def evaluation_report() -> EvaluationView:
-        path = Path("local/evaluation/ollama_trades.json")
-        shadow = None
-        status = "No Ollama comparison yet. Run the documented local benchmark command."
-        if path.is_file():
-            try:
-                if path.stat().st_size > 1_000_000:
-                    raise ValueError("Report too large")
-                shadow = EvaluationReport.model_validate_json(path.read_text(encoding="utf-8"))
-                if shadow.benchmark_kind != "ai_trade_proposals":
-                    raise ValueError("Expected an AI trade-proposal report")
-                status = "Saved AI trade-proposal comparison; inspect its timestamp and model."
-            except (ValueError, OSError):
-                shadow = None
-                status = "Saved comparison is invalid. Run the benchmark again."
-        return EvaluationView(
-            deterministic=evaluate_scenarios(), ollama_shadow=shadow, shadow_status=status
         )
 
     @app.get("/agent/activity")

@@ -7,7 +7,6 @@ import pytest
 from app.agent.portfolio import AITradingAgent, DecisionPortfolioAgent
 from app.api.application import create_app
 from app.config.settings import Settings
-from app.evaluation import evaluate_scenarios
 from app.execution.agent_runs import AgentRuns
 from app.execution.automation import AutomationService
 from app.execution.coordinator import ExecutionCoordinator
@@ -193,18 +192,6 @@ def test_ui_timestamps_include_timezone(client) -> None:
     assert client.get("/audit-events").json()[0]["created_at"].endswith(("Z", "+00:00"))
 
 
-def test_benchmark_separates_hold_agreement_from_sizing() -> None:
-    report = evaluate_scenarios(
-        DecisionPortfolioAgent(DecisionProvider('{"action":"HOLD","reason":"Wait"}')),
-        "ollama_decision",
-        "test",
-    )
-    assert report.benchmark_kind == "bounded_decisions"
-    assert report.decision_cases == 16 and report.decision_matches == 6
-    assert report.sizing_cases == 0
-    assert report.proposed_trades == 0
-
-
 def test_scheduled_skip_appears_in_history(client, automation, adapter, monkeypatch) -> None:
     enable(automation)
     original = adapter.state
@@ -329,18 +316,3 @@ def test_live_ai_trade_cannot_cross_hard_usdc_minimum(adapter, sessions) -> None
             for rule in result["evaluation"]["policy"]["rules"]
         )
     assert adapter.calls == 0
-
-
-def test_trade_benchmark_report_uses_live_proposer(client, tmp_path, monkeypatch) -> None:
-    provider = DecisionProvider(trade_output())
-    report = evaluate_scenarios(AITradingAgent(provider), "ollama_trades", "test", limit=1)
-    assert report.benchmark_kind == "ai_trade_proposals"
-    assert report.rows[0].actual_amount_units == 17_000_000
-    assert report.sizing_cases == 1 and report.sizing_matches == 0
-    monkeypatch.chdir(tmp_path)
-    path = tmp_path / "local" / "evaluation" / "ollama_trades.json"
-    path.parent.mkdir(parents=True)
-    path.write_text(report.model_dump_json(), encoding="utf-8")
-    result = client.get("/evaluation").json()
-    assert result["ollama_shadow"]["benchmark_kind"] == "ai_trade_proposals"
-    assert result["ollama_shadow"]["rows"][0]["agent_action"] == "SWAP"

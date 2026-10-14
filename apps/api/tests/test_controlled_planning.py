@@ -6,12 +6,12 @@ from decimal import Decimal
 import pytest
 from app.agent.portfolio import DecisionPortfolioAgent, PortfolioAgent
 from app.agent.sizing import calculate_plan
-from app.evaluation import SCENARIOS, evaluate_scenarios, fixtures
 from app.policies.rebalance import minimum_allocation
 from app.schemas.domain import Asset, PolicyDraft, TokenChange, TransactionProposal
 from app.simulation.engine import RpcSimulationEngine
 from conftest import GOAL, TOKEN, FakeAdapter
 from fastapi.testclient import TestClient
+from portfolio_cases import SCENARIOS, fixtures
 from pydantic import ValidationError
 from test_api import activate
 
@@ -199,17 +199,6 @@ def test_live_ai_api_preserves_model_small_amount(adapter: FakeAdapter, sessions
         assert result["proposal"]["amount"] == 7_000_000
         assert result["generation"]["execution_mode"] == "ai_trade_proposal"
         assert client.get("/automation").json()["readiness"]["code"] == "READY"
-
-
-def test_benchmark_read_only_and_correct(client: TestClient, adapter: FakeAdapter) -> None:
-    report = evaluate_scenarios()
-    assert report.correct == report.total == 16
-    assert report.approval_requests == 1
-    assert report.blocked == 1
-    assert client.get("/evaluation").status_code == 200
-    assert client.get("/evaluation", headers={"Authorization": "invalid"}).status_code == 401
-    assert adapter.calls == 0
-    assert client.get("/proposals").json() == []
 
 
 def test_approved_trade_rechecks_floor_after_balance_change(

@@ -123,9 +123,6 @@ export function ProposalsPage() {
         See what the agent suggested, which checks passed, and what happened
         next.
       </p>
-      <Link className="button" to="/activity">
-        Run the agent
-      </Link>
       <ProposalResults />
     </>
   );

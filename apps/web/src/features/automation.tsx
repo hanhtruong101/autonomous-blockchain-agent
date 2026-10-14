@@ -101,17 +101,19 @@ export function AutomationPanel() {
             Checking every 30 seconds does not authorize a trade every 30
             seconds. The policy interval and budget still apply.
           </p>
-          <label htmlFor="check-interval">Check portfolio every</label>
-          <select
-            id="check-interval"
-            value={status.enabled ? status.interval_seconds : interval}
-            disabled={status.enabled || action.isPending}
-            onChange={(event) => setInterval(Number(event.target.value))}
-          >
-            <option value={30}>30 seconds · local demonstration</option>
-            <option value={300}>5 minutes</option>
-            <option value={3600}>1 hour</option>
-          </select>
+          <div className="schedule-field">
+            <label htmlFor="check-interval">Check portfolio every</label>
+            <select
+              id="check-interval"
+              value={status.enabled ? status.interval_seconds : interval}
+              disabled={status.enabled || action.isPending}
+              onChange={(event) => setInterval(Number(event.target.value))}
+            >
+              <option value={30}>30 seconds · local demonstration</option>
+              <option value={300}>5 minutes</option>
+              <option value={3600}>1 hour</option>
+            </select>
+          </div>
           <div className="actions">
             <button
               disabled={
@@ -143,7 +145,7 @@ export function AutomationPanel() {
               </button>
             ) : (
               <button
-                className="secondary"
+                className="danger"
                 disabled={action.isPending}
                 onClick={() => action.mutate("freeze")}
               >

@@ -157,51 +157,6 @@ export interface AutomationState {
   consecutive_failures: number;
   worker_available: boolean;
 }
-export interface EvaluationRow {
-  agent_action: string | null;
-  decision_matches_expected: boolean | null;
-  sizing_matches_expected: boolean | null;
-  scenario: string;
-  expected_action: string;
-  expected_amount_units: number;
-  actual_action: string;
-  actual_amount_units: number;
-  matches_expected: boolean;
-  decision: string;
-  latency_ms: number;
-  safety_violations: string[];
-  error: string | null;
-}
-export interface EvaluationReport {
-  benchmark_kind:
-    | "legacy_raw_proposals"
-    | "bounded_decisions"
-    | "deterministic"
-    | "ai_trade_proposals";
-  decision_matches: number;
-  decision_cases: number;
-  sizing_matches: number;
-  sizing_cases: number;
-  provider: string;
-  model: string | null;
-  created_at: string;
-  execution: string;
-  rows: EvaluationRow[];
-  correct: number;
-  total: number;
-  proposed_trades: number;
-  approval_requests: number;
-  blocked: number;
-  invalid_outputs: number;
-  total_latency_ms: number;
-  limitation: string;
-}
-export interface EvaluationView {
-  deterministic: EvaluationReport;
-  ollama_shadow: EvaluationReport | null;
-  shadow_status: string;
-}
-
 export interface AgentActivityItem {
   id: string;
   updated_at: string;
