@@ -624,10 +624,12 @@ details {
   border: 1px solid #e0e6dd;
   border-radius: 8px;
 }
-.policy-boundaries legend {
-  padding: 0 8px;
+.policy-boundaries > summary {
   font-size: 14px;
   font-weight: 600;
+}
+.policy-boundaries[open] > summary {
+  margin-bottom: 20px;
 }
 .policy-fields {
   display: grid;

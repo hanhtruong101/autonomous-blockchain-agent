@@ -6,7 +6,7 @@ import { api } from "../api";
 import { ErrorMessage, Panel, Status } from "../components";
 
 const example =
-  "Keep approximately 70% of my portfolio in USDC, never spend more than 100 USDC per day, rebalance weekly, and only interact with approved protocols.";
+  "Keep approximately 55% of my portfolio in USDC and 45% in WETH. When USDC is below 55%, prioritize swapping WETH into USDC to move toward the target. Allow gradual rebalancing across multiple trades. Do not impose a hard minimum USDC allocation. Spend no more than 100 USDC equivalent per day. Rebalance on demand and only interact with approved protocols.";
 export function CreatePolicy() {
   const [goal, setGoal] = useState(example);
   const [tolerance, setTolerance] = useState(100);
@@ -57,8 +57,8 @@ export function CreatePolicy() {
               ? `Model enabled: creating a draft sends this goal to ${configuration.data.provider_host}. Review the interpretation carefully; the model cannot activate it.`
               : "Offline interpreter: use this template. Change the percentage, daily limit (up to 100), and cadence to weekly, daily, or on demand. No external AI service is called."}
           </p>
-          <fieldset className="policy-boundaries">
-            <legend>Trading boundaries</legend>
+          <details className="policy-boundaries">
+            <summary>Advanced settings</summary>
             <div className="policy-fields">
               <div className="policy-field policy-field-wide">
                 <label htmlFor="tolerance">
@@ -122,7 +122,7 @@ export function CreatePolicy() {
                 </p>
               </div>
             </div>
-          </fieldset>
+          </details>
           <div className="policy-form-footer">
             <p className="muted">
               Review the draft before approving. Creating it does not start

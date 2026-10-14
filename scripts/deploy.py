@@ -51,7 +51,8 @@ def main() -> None:
     account = deploy("PolicySmartAccount", owner, agent, usdc.address, weth.address, 100_000_000)
     send(account.functions.setTarget(dex.address, True))
     send(account.functions.setTarget(recipient, True))
-    send(usdc.functions.mint(account.address, 1_000_000_000))
+    send(usdc.functions.mint(account.address, 500_000_000))
+    send(weth.functions.mint(account.address, 500_000_000))
     send(usdc.functions.mint(dex.address, 10_000_000_000))
     send(weth.functions.mint(dex.address, 10_000_000_000))
     web3.eth.wait_for_transaction_receipt(
