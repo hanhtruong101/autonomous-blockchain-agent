@@ -18,14 +18,78 @@ Only local chain 31337 is supported. Both mock tokens have six decimals and fixe
 account, fake ETH, and 10,000 of each token in MockDex. The independent on-chain
 spending ceiling is 100 test units per UTC chain day, shared by both swap directions.
 
-## Native Windows startup with Ollama
+## Prerequisites
 
-Install Python 3.12+, uv, Node.js 22+, PostgreSQL and Ollama. Create a PostgreSQL
-database named `autonomy`. Run each terminal from the project root (for example
-`D:\autonomous-blockchain-agent`). One-time setup:
+Before following the native Windows setup, have the following installed:
+
+| Requirement | What it is used for |
+|---|---|
+| Python 3.12+ | Backend runtime. The setup below selects Python 3.12. |
+| uv | Creates `.venv`, installs locked Python dependencies and runs backend commands. |
+| Node.js 22+ and npm | Installs and runs the React frontend and local contract tooling. |
+| PostgreSQL | Stores policies, proposals, approvals and audit records. Compose uses PostgreSQL 17. |
+| Ollama | Runs the local AI model. Not required for offline mode. |
+| PowerShell and a web browser | Runs the Windows commands and opens the application UI. |
+
+Also prepare the following before starting the backend:
+
+- **Project files:** clone or download the complete repository, including
+  `pyproject.toml`, `uv.lock`, `package.json` and `package-lock.json`. Git is needed
+  only if you choose to clone or manage the repository with Git.
+- **Database:** start PostgreSQL, create a database named `autonomy` (for example
+  through pgAdmin), and have a database username/password that can connect and run
+  migrations. Replace `YOUR_PASSWORD` in Terminal 2 with your local credentials.
+- **Local model:** after installation, download a model with
+  `ollama pull llama3:latest` and keep Ollama running when using AI mode. The
+  first dependency/model downloads require internet access.
+- **Local ports:** keep `5432` (PostgreSQL), `8545` (Anvil), `8000` (API),
+  `5173` (frontend) and `11434` (Ollama) available for their respective services.
+- **Owner credential:** Terminal 2 generates a local owner token. Keep it in that
+  backend terminal and use the same token to sign in to the UI.
+
+Check that the command-line tools are available in a new PowerShell terminal:
 
 ```powershell
+python --version
+uv --version
+node --version
+npm --version
+ollama --version
+```
+
+The Windows setup installs the Anvil/Forge platform executables through
+`npm ci --ignore-scripts`; a separate Foundry installation is optional for that
+path. Other platforms can use a Foundry installation. Docker with Compose is
+needed only for the alternative container workflow below. No wallet extension,
+real cryptocurrency or API key is required for local Ollama/offline operation.
+
+## Native Windows startup with Ollama
+
+Run each terminal from the project root (for example
+`D:\autonomous-blockchain-agent`). First, create the Python virtual environment
+and install the backend and development dependencies:
+
+```powershell
+uv venv --python 3.12
 uv sync --frozen
+```
+
+This creates `.venv` in the project directory. Dependencies are declared in
+`pyproject.toml` and pinned in `uv.lock`; both files come with the repository.
+There is no separate `requirements.txt` to download. `uv sync --frozen` installs
+the locked dependencies into `.venv`, and all `uv run` commands below use it
+without requiring manual activation.
+
+If you need a `requirements.txt` for another tool, generate it from the same lockfile:
+
+```powershell
+uv export --frozen --format requirements-txt --no-emit-project --output-file requirements.txt
+```
+
+This optional export is not needed for the normal uv setup. Next, install the
+frontend dependencies, compile the contracts and download the local AI model:
+
+```powershell
 npm ci --ignore-scripts
 npm run contracts:build
 ollama pull llama3:latest
